@@ -1,0 +1,11 @@
+history*
+model*
+*.ipynb
+train*
+test*
+val*
+data*
+*.pk
+.DS_Store
+.idea
+*.pyc
