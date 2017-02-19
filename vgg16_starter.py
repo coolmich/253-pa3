@@ -23,6 +23,21 @@ def getModel( output_dim ):
     tl_model.summary()
     return tl_model
 
+def getModel2(output_dim):
+    vgg_model = VGG16(weights='imagenet', include_top=True)
+    vgg_out = vgg_model.layers[-4].output  # Last FC layer's output
+    softmax_layer = Dense(output_dim, activation='softmax')(vgg_out)
+    # Create new transfer learning model
+    tl_model = Model(input=vgg_model.input, output=softmax_layer)
+
+    # Freeze all layers of VGG16 and Compile the model
+    for layer in tl_model.layers[:-1]:
+        layer.trainable = False
+    # Confirm the model is appropriate
+    tl_model.summary()
+    return tl_model
+
+
 if __name__ == '__main__':
     #Output dim for your dataset
     output_dim = 256 #For Caltech256
