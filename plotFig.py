@@ -4,13 +4,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 from scipy.misc import imsave
-from keras import backend
 from keras.preprocessing.image import ImageDataGenerator
 from keras.models import load_model
 from keras.models import Model
 from keras.preprocessing import image
 from keras.applications.resnet50 import preprocess_input, decode_predictions
-
 
 def plotLoss(img_num, batch_sz):
     pkl_file = open('history_{}'.format(img_num), 'rb')
@@ -74,20 +72,33 @@ def visualizeFilter(img_num, img_path, layer_name):
     intermediate_layer_first = Model(input=model.input, output=model.get_layer(layer_name).output)
     # intermediate_output : 1* 224 * 224 * 64
     intermediate_output = intermediate_layer_first.predict(data)[0]
+    intermediate_output = deprocess_image(intermediate_output)
 
     output_dir = 'results/num_%d-%s/' % (img_num, layer_name)
     if not os.path.exists(output_dir): os.makedirs(output_dir)
-    all_imgs = Image.new('L',(1792,1792))
+    else : return
+
+    filter_num = intermediate_output.shape[0]
+    ftr_width = intermediate_output.shape[1]
+    ftr_height = intermediate_output.shape[2]
+    if filter_num == 64:
+        h_num = 8
+        v_num = 8
+    elif filter_num == 512:
+        h_num = 32
+        v_num = 16
+
+    all_imgs = Image.new('L',(h_num*ftr_width, v_num*ftr_height))
     imgs = []
-    for i in range(intermediate_output.shape[2]):
-        img = Image.fromarray(intermediate_output[:,:,i])
-        img = deprocess_image(img)
+    for i in range(filter_num):
+        img = Image.fromarray(intermediate_output[i])
         imgs.append(img)
         imsave(output_dir + 'filter_%d.jpg' % (i), img)
 
-    for i in range(8):
-        for j in range(8):
-            all_imgs.paste(imgs[i*8 + j], (j*224, i*224))
+
+    for i in range(v_num):
+        for j in range(h_num):
+            all_imgs.paste(imgs[i*h_num + j], (j*ftr_width, i*ftr_height))
     imsave(output_dir + 'num_%d-all_filters.jpg' % (img_num), all_imgs)
 
 # util function to convert a tensor into a valid image

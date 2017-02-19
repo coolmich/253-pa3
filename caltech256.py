@@ -69,12 +69,6 @@ class PreProcWrapper():
     def __init__(self, directory_gen):
         self.core = directory_gen
 
-    # for python 2.7
-    def next(self):
-        x, y = self.core.next()
-        return preprocess_input(x), y
-
-    # for python 3.0
     def __next__(self):
         x, y = self.core.next()
         return preprocess_input(x), y
