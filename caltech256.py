@@ -69,7 +69,13 @@ class PreProcWrapper():
     def __init__(self, directory_gen):
         self.core = directory_gen
 
+    # for python 2.7
     def next(self):
+        x, y = self.core.next()
+        return preprocess_input(x), y
+
+    # for python 3.0
+    def __next__(self):
         x, y = self.core.next()
         return preprocess_input(x), y
 
@@ -84,7 +90,7 @@ if __name__ == '__main__':
     batch_sz, num_epoches = 64, 10
     # ATTENTION
     # change the number in the following array to train your model, e.g. I've had 2 so you can remove 2
-    for img_num in [2, 4, 8, 16]:
+    for img_num in [2,4,6,8]:
         model = getModel(class_num)
         model.compile(loss='categorical_crossentropy', optimizer="adagrad", metrics=['acc'])
 
@@ -98,9 +104,13 @@ if __name__ == '__main__':
                                             save_weights_only=False, mode='max', period=1)
 
         ]
+
         history = model.fit_generator(PreProcWrapper(train_generator), class_num*img_num, num_epoches,
                                       validation_data=PreProcWrapper(val_generator), nb_val_samples=class_num*img_num/5,
                                       callbacks=callbacks)
-        pk.dump(history.history, open('history_{}'.format(img_num), 'wb'))
+        output_file = open('history_{}'.format(img_num), 'wb')
+        pk.dump(history.history, output_file)
+        output_file.close()
+
         model.save('model_{}-final'.format(img_num))
-        print 'Finish saving model and history for img_num of {}'.format(img_num)
+        print('Finish saving model and history for img_num of {}'.format(img_num))
