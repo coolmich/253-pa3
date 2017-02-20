@@ -1,5 +1,7 @@
 history*
 model*
+bonus_model*
+result*
 *.ipynb
 train*
 test*

@@ -1,16 +1,20 @@
 from keras.applications.vgg16 import *
 from keras.applications.vgg16 import _obtain_input_shape
-from keras.backend.tensorflow_backend import softmax
+#from keras.backend.tensorflow_backend import softmax
+from keras.activations import softmax
 from caltech256 import *
-
-import tensorflow as tf
+import numpy as np
+#import tensorflow as tf
 
 
 def temperature_vgg(T, include_top=True, weights='imagenet',
           input_tensor=None, input_shape=None,
           classes=1000):
+    # def temperature_softmax(x):
+    #    return softmax(tf.div(x, tf.constant(T*1.0)))
+
     def temperature_softmax(x):
-        return softmax(tf.div(x, tf.constant(T*1.0)))
+        return softmax(np.divide(x, T*1.0))
 
     if weights not in {'imagenet', None}:
         raise ValueError('The `weights` argument should be either '
@@ -127,7 +131,7 @@ def get_model(T, output_dim):
 if __name__ == '__main__':
     datagen = ImageDataGenerator()
     img_num, class_num, num_epoches, batch_sz = 2, 257, 10, 64
-    for temperature in [2, 4, 8, 16]:
+    for temperature in [0.25]:
         model = get_model(temperature, 257)
         model.compile(loss='categorical_crossentropy', optimizer="adagrad", metrics=['acc'])
         train_generator = datagen.flow_from_directory('train_{}'.format(img_num), target_size=(224, 224),
